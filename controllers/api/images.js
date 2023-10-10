@@ -1,12 +1,11 @@
-const Image = require('../../models/image');
-const User = require('../../models/user');
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const multer = require('multer');
 require('dotenv').config();
 const crypto = require('crypto')
 
 module.exports = {
     create,
+
 };
 
 const bucketName = process.env.AWS_BUCKET_NAME;
@@ -47,7 +46,7 @@ async function create(req, res) {
                 await s3Client.send(new PutObjectCommand(params));
                 console.log('File uploaded to S3 successfully');
 
-                res.json({ message: 'File uploaded successfully' });
+                res.json(fileName);
             } catch (s3Error) {
                 console.error('Error uploading file to S3:', s3Error);
                 res.json({ message: 'Error uploading file to S3' });

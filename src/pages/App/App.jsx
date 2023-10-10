@@ -5,11 +5,15 @@ import AuthPage from '../AuthPage/AuthPage';
 import NavBar from '../../components/NavBar/NavBar'
 import { Button, Input, VStack } from "@chakra-ui/react";
 import axios from 'axios'
-
+import { createProfile } from '../../utilities/profiles-api'
 
 export default function App() {
   const [ user, setUser ] = useState(getUser())
   const [selectedFile, setSelectedFile] = useState(null);
+  const [newProfile, setNewProfile] = useState({
+    user: '',
+    profilePic: ''
+  })
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -24,10 +28,23 @@ export default function App() {
     try {
       const formData = new FormData();
       formData.append('image', selectedFile);
-      await axios.post("/api/images", formData, { headers: {'Content-Type': 'multipart/form-data'}})
+      // const imageName = await axios.post("/api/images", formData, { headers: {'Content-Type': 'multipart/form-data'}})
+      const profile = await createProfile({
+        user: user._id,
+        profilePic: 'picture'
+      })
     } catch (error) {
       console.error("Error uploading file:", error);
     }
+
+    // try {
+    //   const profile = await createProfile({
+    //     user: user._id,
+    //     profilePic: imageName
+    //   })
+    // } catch (error) {
+    //   console.error("Error uploading image to database:", error);
+    // }
   };
 
   return (
