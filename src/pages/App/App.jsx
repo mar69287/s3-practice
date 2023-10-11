@@ -3,48 +3,45 @@ import { useState } from 'react'
 import { getUser } from '../../utilities/users-service'
 import AuthPage from '../AuthPage/AuthPage';
 import NavBar from '../../components/NavBar/NavBar'
-import { Button, Input, VStack } from "@chakra-ui/react";
+import { Button, Image, Input, VStack } from "@chakra-ui/react";
 import axios from 'axios'
-import { createProfile } from '../../utilities/profiles-api'
+import { createProfile, getUserProfile } from '../../utilities/profiles-api'
 
 export default function App() {
   const [ user, setUser ] = useState(getUser())
   const [selectedFile, setSelectedFile] = useState(null);
-  const [newProfile, setNewProfile] = useState({
-    user: '',
-    profilePic: ''
-  })
+  const [profile, setProfile] = useState(null)
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile) {
-      console.error("No file selected");
-      return;
-    }
+    // if (!selectedFile) {
+    //   console.error("No file selected");
+    //   return;
+    // }
 
     try {
-      const formData = new FormData();
-      formData.append('image', selectedFile);
+      // const formData = new FormData();
+      // formData.append('image', selectedFile);
       // const imageName = await axios.post("/api/images", formData, { headers: {'Content-Type': 'multipart/form-data'}})
-      const profile = await createProfile({
-        user: user._id,
-        profilePic: 'picture'
-      })
+      // console.log(imageName.data)
+      // const profile = await createProfile({
+      //   user: user._id,
+      //   profilePic: imageName.data
+      // })
+      const userProfile = await getUserProfile()
+      setProfile(userProfile)
     } catch (error) {
       console.error("Error uploading file:", error);
     }
 
-    // try {
-    //   const profile = await createProfile({
-    //     user: user._id,
-    //     profilePic: imageName
-    //   })
-    // } catch (error) {
-    //   console.error("Error uploading image to database:", error);
-    // }
+    try {
+
+    } catch {
+
+    }
   };
 
   return (
@@ -59,6 +56,9 @@ export default function App() {
               Upload
             </Button>
           </VStack>
+          {profile && 
+          <Image src={profile.profilePic}  boxSize={20}/>
+          }
         </>
         :
         <AuthPage setUser={setUser} />

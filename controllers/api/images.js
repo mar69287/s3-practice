@@ -41,16 +41,9 @@ async function create(req, res) {
                 Body: file.buffer,
                 ContentType: file.mimetype,
             };
-
-            try {
-                await s3Client.send(new PutObjectCommand(params));
-                console.log('File uploaded to S3 successfully');
-
-                res.json(fileName);
-            } catch (s3Error) {
-                console.error('Error uploading file to S3:', s3Error);
-                res.json({ message: 'Error uploading file to S3' });
-            }
+            await s3Client.send(new PutObjectCommand(params));
+            console.log(fileName)
+            res.json(fileName);
         });
 
     } catch (error) {
