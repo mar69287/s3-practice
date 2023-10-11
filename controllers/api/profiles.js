@@ -24,16 +24,41 @@ const s3Client = new S3Client({
         secretAccessKey
     }
 });
+const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex')
 
 async function create(req, res) {
     try {
-        const profile = req.body;
-        const newProfile = new Profile(profile);
-        const savedProfile = await newProfile.save();
+        upload.single('image')(req, res, async (err) => {
+            if (err) {
+                console.error('Multer error:', err);
+                return res.status(500).json({ message: 'Error uploading file' });
+            }
+            const file = req.file
+            // Upload the file to AWS S3
+            const fileName = generateFileName()
+            const params = {
+                Bucket: bucketName,
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            };
+            await s3Client.send(new PutObjectCommand(params));
+            const profile = req.body;
+            profile.profilePic = fileName;
+            const newProfile = new Profile(profile);
+            const savedProfile = await newProfile.save();
+            savedProfile.profilePic = await getSignedUrl(
+                s3Client,
+                new GetObjectCommand({
+                  Bucket: bucketName,
+                  Key: profile.profilePic
+                }),
+                { expiresIn: 60 * 10 }
+            )
+    
+            res.json(savedProfile);
 
-        res.json(savedProfile);
-        // console.log('in profile controller')
-        // console.log(req.body)
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error creating profile' });
@@ -43,22 +68,15 @@ async function create(req, res) {
 async function show(req, res) {
     const userId = req.user._id;
     const profile = await Profile.findOne({ user: userId })
-    
-    // const params = {
-    //     Bucket: bucketName,
-    //     Key: profile.profilePic,
-    // };
-    // const command = new GetObjectCommand(params);
-    const imageUrl = await getSignedUrl(
+
+    profile.profilePic = await getSignedUrl(
         s3Client,
         new GetObjectCommand({
           Bucket: bucketName,
           Key: profile.profilePic
         }),
         { expiresIn: 60 * 10 }
-      )
-    profile.profilePic = imageUrl;
-    // console.log(profile)
+    )
 
     res.json(profile);
 }

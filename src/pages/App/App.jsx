@@ -17,30 +17,22 @@ export default function App() {
   };
 
   const handleFileUpload = async () => {
-    // if (!selectedFile) {
-    //   console.error("No file selected");
-    //   return;
-    // }
-
-    try {
-      // const formData = new FormData();
-      // formData.append('image', selectedFile);
-      // const imageName = await axios.post("/api/images", formData, { headers: {'Content-Type': 'multipart/form-data'}})
-      // console.log(imageName.data)
-      // const profile = await createProfile({
-      //   user: user._id,
-      //   profilePic: imageName.data
-      // })
-      const userProfile = await getUserProfile()
-      setProfile(userProfile)
-    } catch (error) {
-      console.error("Error uploading file:", error);
+    if (!selectedFile) {
+      console.error("No file selected");
+      return;
     }
 
     try {
-
-    } catch {
-
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      formData.append('userProfile', JSON.stringify({
+        user: user._id,
+        profilePic: ''
+      }));
+      const profile = await axios.post("/api/profiles/create", formData, { headers: {'Content-Type': 'multipart/form-data'}})
+      setProfile(profile.data)
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
